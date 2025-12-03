@@ -57,12 +57,12 @@ export class SuperfanClient {
   async initializeConfig(maxSponsors: number, usdcMint: PublicKey, admin: PublicKey) {
     const [config] = deriveConfigPda(this.program.programId);
     await this.program.methods
-      .initializeConfig(new anchor.BN(maxSponsors), usdcMint, admin)
+      .initializeConfig(maxSponsors, usdcMint, admin)
       .accounts({
         config,
         payer: this.provider.wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
     return config;
   }
@@ -83,7 +83,7 @@ export class SuperfanClient {
         sponsor,
         marketCounter,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
 
     return { sponsor, marketCounter };
@@ -134,7 +134,7 @@ export class SuperfanClient {
         marketCounter,
         market,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
 
     return market;
@@ -150,7 +150,7 @@ export class SuperfanClient {
         authority,
         sponsor,
         market,
-      })
+      } as any)
       .rpc();
   }
 
@@ -164,7 +164,7 @@ export class SuperfanClient {
         authority,
         sponsor,
         market,
-      })
+      } as any)
       .rpc();
   }
 
@@ -178,7 +178,7 @@ export class SuperfanClient {
         authority,
         sponsor,
         market,
-      })
+      } as any)
       .rpc();
   }
 }

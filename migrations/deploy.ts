@@ -13,9 +13,14 @@ module.exports = async function (provider: anchor.AnchorProvider) {
 
   const program = anchor.workspace.SuperfanContracts;
 
-  const admin = new PublicKey(
-    process.env.ADMIN ?? provider.wallet.publicKey.toBase58()
-  );
+  const walletPubkey = provider.wallet.publicKey;
+  const adminEnv = process.env.ADMIN;
+  const admin = adminEnv ? new PublicKey(adminEnv) : walletPubkey;
+  if (!admin.equals(walletPubkey)) {
+    console.warn(
+      "ADMIN pubkey differs from ANCHOR_WALLET. Using wallet as signer, admin as config; ensure they match to avoid signature issues."
+    );
+  }
   const usdcMintEnv = process.env.USDC_MINT;
   if (!usdcMintEnv) {
     throw new Error("USDC_MINT env var required for deploy migration");
