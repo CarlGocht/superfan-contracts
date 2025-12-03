@@ -63,11 +63,12 @@ pub struct LiquidityPool {
     pub capacity: u64,
     pub locked: u64,
     pub first_n_limit: u16,
+    pub vault: Pubkey,
     pub bump: u8,
 }
 
 impl LiquidityPool {
-    pub const SPACE: usize = 32 + 8 + 8 + 2 + 1;
+    pub const SPACE: usize = 32 + 8 + 8 + 2 + 32 + 1;
 }
 
 #[account]

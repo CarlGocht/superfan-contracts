@@ -100,6 +100,8 @@ pub struct FundPool<'info> {
     pub config: Account<'info, SuperfanConfig>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(address = config.usdc_mint)]
+    pub mint: Account<'info, anchor_spl::token::Mint>,
     #[account(
         seeds = [b"sponsor", authority.key().as_ref()],
         bump = sponsor.bump,
@@ -114,6 +116,21 @@ pub struct FundPool<'info> {
         space = 8 + LiquidityPool::SPACE
     )]
     pub liquidity_pool: Account<'info, LiquidityPool>,
+    #[account(
+        init,
+        payer = authority,
+        associated_token::mint = mint,
+        associated_token::authority = liquidity_pool
+    )]
+    pub liquidity_vault: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = authority
+    )]
+    pub sponsor_token_account: Account<'info, anchor_spl::token::TokenAccount>,
+    pub token_program: Program<'info, anchor_spl::token::Token>,
+    pub associated_token_program: Program<'info, anchor_spl::associated_token::AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
@@ -123,6 +140,8 @@ pub struct WithdrawPool<'info> {
     pub config: Account<'info, SuperfanConfig>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(address = config.usdc_mint)]
+    pub mint: Account<'info, anchor_spl::token::Mint>,
     #[account(
         seeds = [b"sponsor", authority.key().as_ref()],
         bump = sponsor.bump,
@@ -131,6 +150,20 @@ pub struct WithdrawPool<'info> {
     pub sponsor: Account<'info, Sponsor>,
     #[account(mut, seeds = [b"liquidity_pool", sponsor.key().as_ref()], bump = liquidity_pool.bump)]
     pub liquidity_pool: Account<'info, LiquidityPool>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = liquidity_pool
+    )]
+    pub liquidity_vault: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = authority
+    )]
+    pub sponsor_token_account: Account<'info, anchor_spl::token::TokenAccount>,
+    pub token_program: Program<'info, anchor_spl::token::Token>,
+    pub associated_token_program: Program<'info, anchor_spl::associated_token::AssociatedToken>,
 }
 
 // Positions
@@ -140,6 +173,8 @@ pub struct OpenPosition<'info> {
     pub config: Account<'info, SuperfanConfig>,
     #[account(mut)]
     pub user: Signer<'info>,
+    #[account(address = config.usdc_mint)]
+    pub mint: Account<'info, anchor_spl::token::Mint>,
     #[account(
         seeds = [b"market", market.sponsor.as_ref(), &market.market_id.to_le_bytes()],
         bump = market.bump
@@ -151,6 +186,18 @@ pub struct OpenPosition<'info> {
     )]
     pub liquidity_pool: Account<'info, LiquidityPool>,
     #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = liquidity_pool
+    )]
+    pub liquidity_vault: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = user
+    )]
+    pub user_token_account: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
         init,
         seeds = [b"position", market.key().as_ref(), user.key().as_ref()],
         bump,
@@ -158,6 +205,8 @@ pub struct OpenPosition<'info> {
         space = 8 + Position::SPACE
     )]
     pub position: Account<'info, Position>,
+    pub token_program: Program<'info, anchor_spl::token::Token>,
+    pub associated_token_program: Program<'info, anchor_spl::associated_token::AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
@@ -167,6 +216,8 @@ pub struct ClosePosition<'info> {
     pub config: Account<'info, SuperfanConfig>,
     #[account(mut)]
     pub user: Signer<'info>,
+    #[account(address = config.usdc_mint)]
+    pub mint: Account<'info, anchor_spl::token::Mint>,
     #[account(
         seeds = [b"market", market.sponsor.as_ref(), &market.market_id.to_le_bytes()],
         bump = market.bump
@@ -179,6 +230,18 @@ pub struct ClosePosition<'info> {
     pub liquidity_pool: Account<'info, LiquidityPool>,
     #[account(
         mut,
+        associated_token::mint = mint,
+        associated_token::authority = liquidity_pool
+    )]
+    pub liquidity_vault: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = user
+    )]
+    pub user_token_account: Account<'info, anchor_spl::token::TokenAccount>,
+    #[account(
+        mut,
         close = user,
         seeds = [b"position", market.key().as_ref(), user.key().as_ref()],
         bump = position.bump,
@@ -186,6 +249,8 @@ pub struct ClosePosition<'info> {
         has_one = market
     )]
     pub position: Account<'info, Position>,
+    pub token_program: Program<'info, anchor_spl::token::Token>,
+    pub associated_token_program: Program<'info, anchor_spl::associated_token::AssociatedToken>,
 }
 
 // Reputation
